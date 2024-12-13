@@ -2,14 +2,13 @@ package it.unibo.es2;
 
 import javax.swing.*;
 import java.util.*;
-import java.util.List;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
 public class GUI extends JFrame {
     
     private final Logics logics;
-    private final List<JButton> buttons;
+    private final Map<JButton, Pair<Integer, Integer>> buttons;
     
     public GUI(int size) {
         this.logics = new LogicsImpl(size);
@@ -19,22 +18,28 @@ public class GUI extends JFrame {
         JPanel panel = new JPanel(new GridLayout(size,size));
         this.getContentPane().add(BorderLayout.CENTER,panel);
 
-        this.buttons = new ArrayList<>(size * size);
+        this.buttons = new HashMap<>(size * size);
 
         ActionListener al = (e)->{
             final JButton buttonClicked = (JButton)e.getSource();
-            buttonClicked.setText(this.logics.click(this.buttons.indexOf(buttonClicked)) ? "*" : " ");
+            this.buttons.forEach((b, pos) -> {
+                if (b.equals(buttonClicked)) {
+                    buttonClicked.setText(this.logics.click(pos));
+                }
+            });
             if (this.logics.toQuit()) {
                 System.exit(0);
             }
         };
-        var enablings = this.logics.enablings();
-        for (int i = 0; i < size * size; i++) {
-            final JButton button = new JButton(enablings.get(i) ? "*" : " ");
-            this.buttons.add(button);
-            panel.add(button);
-            button.setVisible(true);
-            button.addActionListener(al);
+
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                final JButton button = new JButton();
+                this.buttons.put(button, new Pair<>(j, i));
+                panel.add(button);
+                button.setVisible(true);
+                button.addActionListener(al);
+            }
         }
         this.setVisible(true);
     }   
